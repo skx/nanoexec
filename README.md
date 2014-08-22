@@ -6,7 +6,7 @@ for the execution of remote commands via a shared [nanonmsg](http://nanomsg.org/
 
 In brief:
 
-* There is a central host creates a queue through which commands can be broadcast.
+* There is a central host which creates a queue through which commands can be broadcast.
 * There are an arbitrary number of listeners, which subscribe to the master-queue.
    * When a message is seen for the current host it will be executed.
 
