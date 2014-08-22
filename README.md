@@ -49,17 +49,19 @@ If you want to mass-broadcast you could also use the magic string "`ALL`":
 Security
 --------
 
-You'll want to open the port which is used for communication, `4444` in the
-example(s) above.
+The agents that listen for messages will connect to the master host,
+and will not themselves listen upon the network.
 
-You'll want to open that port only to managed nodes, since there is an
-obvious security risk.
+The master node will have to have a port open for communiction, `4444`
+in the examples above.   To restrict the attack surface you'll almost
+certainly want to open that port only to hosts that you expect to connect
+to it.
 
-If you choose a high-port it is not necessary for either the listener
-or the injector to run as root.
+**NOTE** If you choose a high-port for the connection then it is not
+necessary to run either the listener or the injector as root.
 
 If you launch `nanoexec` as root you can configure it to drop permissions to
-the given user via:
+the given user via the `--user` argument, for example:
 
     # ./nanoexec --user=nobody tcp://master.example.com:4444
 
@@ -67,10 +69,14 @@ the given user via:
 Building
 --------
 
-There is a debian package of the nanomsg library, it is not available for
-Wheezy but backports cleanly:
+There is a debian package of the [nanomsg library](https://packages.debian.org/libnanomsg0), it is not available for Wheezy but backports cleanly.
 
-* https://packages.debian.org/libnanomsg0
+I've produced a backported library, and a binary release of this repository
+which you can find here:
+
+* http://packages.steve.org.uk/nanoexec/
+
+
 
 
 Steve
