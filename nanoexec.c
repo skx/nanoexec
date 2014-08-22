@@ -44,6 +44,7 @@ void chuser(const char *username )
 
 
 
+
 //
 //  Get the (full) hostname of this host.
 //
@@ -87,18 +88,28 @@ int main (int argc, char *argv[])
     //
     int c;
 
+    //
+    //  Options
+    //
+    char *user     = NULL;
+    char *hostname = NULL;
+    int verbose = 0;
+
+
     while (1)
     {
         static struct option long_options[] =
             {
                 {"user", required_argument, 0, 'u'},
+                {"hostname", required_argument, 0, 'h'},
+                {"verbose", no_argument, 0, 'v'},
                 {0, 0, 0, 0}
             };
 
         /* getopt_long stores the option index here. */
         int option_index = 0;
 
-        c = getopt_long(argc, argv, "u:", long_options, &option_index);
+        c = getopt_long(argc, argv, "u:h:", long_options, &option_index);
 
         /* Detect the end of the options. */
         if (c == -1)
@@ -107,9 +118,14 @@ int main (int argc, char *argv[])
         switch (c)
         {
         case 'u':
-            chuser( optarg );
+            user = strdup(optarg);
             break;
-
+        case 'h':
+            hostname = strdup( optarg );
+            break;
+        case 'v':
+            verbose += 1;
+            break;
         default:
             exit (1);
         }
@@ -128,15 +144,28 @@ int main (int argc, char *argv[])
     }
 
     //
+    //  Get the hostname if not set
+    //
+    if ( hostname == NULL )
+        hostname = get_hostname();
+
+    //
+    //  Now we can drop privileges if we must.
+    //
+    if ( user )
+    {
+        if ( verbose )
+            printf("chuser(%s)\n", user );
+
+        chuser(user);
+    }
+
+    //
     //  Create the socket.
     //
     int sock = nn_socket (AF_SP, NN_SUB);
     assert (sock >= 0);
 
-    //
-    //  Get our hostname
-    //
-    const char *h = get_hostname();
 
     //
     //  Filter so that we ignore messages not intended for us.
@@ -145,8 +174,9 @@ int main (int argc, char *argv[])
     // by the `get_hostname()` function, or the magic string "ALL".
     //
     //
-    printf("Filtering on hostname: %s\n", h);
-    assert (nn_setsockopt (sock, NN_SUB, NN_SUB_SUBSCRIBE, h, strlen(h) ) >= 0);
+    printf("Filtering on hostname: %s\n", hostname);
+    assert (nn_setsockopt (sock, NN_SUB, NN_SUB_SUBSCRIBE, hostname,
+                           strlen(hostname) ) >= 0);
     assert (nn_setsockopt (sock, NN_SUB, NN_SUB_SUBSCRIBE, "ALL", 3 ) >= 0);
     assert( nn_connect(sock,argv[optind]));
 
@@ -162,7 +192,9 @@ int main (int argc, char *argv[])
         char *buf = NULL;
         int bytes = nn_recv (sock, &buf, NN_MSG, 0);
         assert (bytes >= 0);
-        printf ("RECEIVED %s\n", buf);
+
+        if ( verbose )
+            printf ("Received string: %s\n", buf);
 
         //
         //  The message will be ":"-deliminated.
@@ -173,7 +205,9 @@ int main (int argc, char *argv[])
         char *cmd = strchr(buf, ':' );
         if ( cmd != NULL )
         {
-            printf("CMD: '%s'\n", cmd+1 );
+            if ( verbose )
+                printf("Running command: '%s'\n", cmd+1 );
+
             system( cmd+1 );
         }
 
