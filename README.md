@@ -2,7 +2,7 @@ nanoexec - nanomsg based command execution
 ------------------------------------------
 
 This repository contains a simple client/server "thing" which allows
-for the execution of remote commands via a shared [nanonmsg](http://nanomsg.org/) queue.
+for the execution of remote commands via a shared [nanomsg](http://nanomsg.org/) queue.
 
 In brief:
 
