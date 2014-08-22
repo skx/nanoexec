@@ -58,6 +58,11 @@ obvious security risk.
 If you choose a high-port it is not necessary for either the listener
 or the injector to run as root.
 
+If you launch `nanoexec` as root you can configure it to drop permissions to
+the given user via:
+
+    # ./nanoexec --user=nobody tcp://master.example.com:4444
+
 
 Building
 --------
