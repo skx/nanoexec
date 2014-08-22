@@ -1,0 +1,17 @@
+Source: nanoexec
+Section: net
+Priority: optional
+Maintainer: Steve Kemp <steve@steve.org.uk>
+Build-Depends: debhelper (>= 7), libnanomsg-dev
+Standards-Version: 3.9.4
+Homepage: http://github.com/skx/nanoxexec/
+
+Package: nanoexec
+Architecture: any
+Depends: ${misc:Depends}, ${shlibs:Depends}
+Description: remote command execution utility
+ This tool allows you to execute arbitrary commands upon the hosts
+ that connect to a central host.
+ .
+ The remote hosts don't need to accept incoming network connections
+ which reduces the attack surface.

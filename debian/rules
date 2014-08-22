@@ -1,0 +1,58 @@
+#!/usr/bin/make -f
+# Sample debian/rules that uses debhelper.
+# GNU copyright 1997 to 1999 by Joey Hess.
+
+# Uncomment this to turn on verbose mode.
+# export DH_VERBOSE=1
+
+
+
+build-arch: build
+build-indep: build
+
+
+build: build-stamp
+
+build-stamp:
+	dh_testdir
+
+
+clean:
+	dh_testdir
+	dh_testroot
+	rm -f build-stamp
+
+	dh_clean
+	rm nanotrigger || true
+
+install: build
+	dh_testdir
+	dh_testroot
+	dh_prep
+	dh_installdirs
+	make
+	cp trigger nanotrigger
+	dh_install
+
+# Build architecture-independent files here.
+binary-indep: build install
+	dh_testdir
+	dh_testroot
+	dh_installdebconf
+	dh_installman
+	dh_installdocs README.md
+	dh_installchangelogs
+	dh_compress
+	dh_fixperms
+	dh_strip
+	dh_installdeb
+	dh_gencontrol
+	dh_md5sums
+	dh_builddeb
+
+# Build architecture-dependent files here.
+binary-arch: build install
+# We have nothing to do here
+
+binary: binary-indep binary-arch
+.PHONY: build clean binary-indep binary-arch binary install
