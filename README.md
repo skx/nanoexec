@@ -40,7 +40,7 @@ hosts:
 
     # ./trigger --host=host1.example.com --command=uptime
 
-If you want to mass-broadcast you could also use the magic string "`ALL:`":
+If you want to mass-broadcast you could also use the magic string "`ALL`":
 
     # ./trigger --host=ALL --command=uptime
 
