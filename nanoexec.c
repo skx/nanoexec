@@ -67,8 +67,13 @@ int main (const int argc, const char **argv)
     //
     //  Filter so that we ignore messages not intended for us.
     //
+    //  We accept messages prefixed with our hostname, as returned
+    // by the `get_hostname()` function, or the magic string "ALL".
+    //
+    //
     printf("Filtering on hostname: %s\n", h);
     assert (nn_setsockopt (sock, NN_SUB, NN_SUB_SUBSCRIBE, h, strlen(h) ) >= 0);
+    assert (nn_setsockopt (sock, NN_SUB, NN_SUB_SUBSCRIBE, "ALL", 3 ) >= 0);
     assert( nn_connect(sock,argv[1]));
 
     while (1)
@@ -84,10 +89,12 @@ int main (const int argc, const char **argv)
         //
         //  Get the command and execute it.
         //
-        char *cmd = buf + strlen(h) + 1;
-        printf("CMD: '%s'\n", cmd );
-        system( cmd );
-
+        char *cmd = strchr(buf, ':' );
+        if ( cmd != NULL )
+        {
+            printf("CMD: '%s'\n", cmd+1 );
+            system( cmd+1 );
+        }
         nn_freemsg (buf);
     }
     return nn_shutdown (sock, 0);

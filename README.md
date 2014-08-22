@@ -40,13 +40,10 @@ hosts:
 
     # ./trigger host1.example.com:uptime
 
-You'll note that commands have to be specified for the full hostname of the
-master.  It would be trivial to add a second filter to the managed hosts to
-allow:
+If you want to mass-broadcast you could also use the magic string "`ALL:`":
 
-   # ./trigger ALL:id
+    # ./trigger ALL:uptime
 
-But that has not yet been done.
 
 
 Security
