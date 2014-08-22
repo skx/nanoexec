@@ -12,3 +12,6 @@ nanoexec: nanoexec.c Makefile
 
 clean:
 	rm trigger nanoexec || true
+
+indent:
+	find . \( -name '*.c' -o -name '*.h' \) -exec indent  --braces-after-if-line --no-tabs  --k-and-r-style --line-length 90 --indent-level 4 -bli0 \{\} \;

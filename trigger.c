@@ -10,7 +10,7 @@
 
 
 
-void send_command( const char *host, const char *command )
+void send_command(const char *host, const char *command)
 {
 
     //
@@ -18,57 +18,56 @@ void send_command( const char *host, const char *command )
     //
     const char *url = "tcp://*:4444";
 
-    int sock = nn_socket (AF_SP, NN_PUB);
-    assert (sock >= 0);
-    assert(nn_bind (sock, url) );
+    int sock = nn_socket(AF_SP, NN_PUB);
+    assert(sock >= 0);
+    assert(nn_bind(sock, url));
 
     //
     //  This is icky.
     //
-    nn_sleep (100);
+    nn_sleep(100);
 
     //
     //  Build up the buffer to send
     //
-    char *buf = (char *)malloc( strlen( host ) + strlen( command ) + 2 );
-    if ( buf == NULL )
+    char *buf = (char *) malloc(strlen(host) + strlen(command) + 2);
+    if (buf == NULL)
     {
         printf("Failed to allocate memory for command\n");
         exit(1);
     }
 
 
-    sprintf( buf, "%s:%s", host, command );
-    int bytes = nn_send (sock, buf, strlen(buf)+1, 0);
-    if (bytes != strlen(buf)+1)
+    sprintf(buf, "%s:%s", host, command);
+    int bytes = nn_send(sock, buf, strlen(buf) + 1, 0);
+    if (bytes != strlen(buf) + 1)
     {
-        fprintf(stderr, "WARNING: Short send\n" );
+        fprintf(stderr, "WARNING: Short send\n");
     }
 
     free(buf);
 
-    nn_shutdown (sock, 0);
+    nn_shutdown(sock, 0);
 }
 
 
-int main (int argc, char **argv)
+int main(int argc, char **argv)
 {
     /**
      * Host + Command to issue.
      */
     char *command = NULL;
-    char *host   = NULL;
+    char *host = NULL;
 
     int c;
 
     while (1)
     {
-        static struct option long_options[] =
-            {
-                {"host", required_argument, 0, 'h'},
-                {"command", required_argument, 0, 'c'},
-                {0, 0, 0, 0}
-            };
+        static struct option long_options[] = {
+            {"host", required_argument, 0, 'h'},
+            {"command", required_argument, 0, 'c'},
+            {0, 0, 0, 0}
+        };
 
         /* getopt_long stores the option index here. */
         int option_index = 0;
@@ -82,30 +81,28 @@ int main (int argc, char **argv)
         switch (c)
         {
         case 'c':
-            if ( command )
+            if (command)
                 free(command);
-            command = strdup( optarg );
+            command = strdup(optarg);
             break;
         case 'h':
-            if ( host )
+            if (host)
                 free(host);
-            host = strdup( optarg );
+            host = strdup(optarg);
             break;
 
         default:
-            exit (1);
+            exit(1);
         }
     }
 
 
-    if ( host && command )
+    if (host && command)
     {
-        send_command( host, command );
-    }
-    else
+        send_command(host, command);
+    } else
     {
-        printf( "Usage: %s --host [hostname|ALL] --command \"some command\"\n",
-                argv[0] );
+        printf("Usage: %s --host [hostname|ALL] --command \"some command\"\n", argv[0]);
     }
 
     return 0;

@@ -22,7 +22,7 @@ volatile int stop = 0;
 //
 //  SIGINT handler - allow ourselves to be terminated cleanly.
 //
-void handler (int x)
+void handler(int x)
 {
     stop = 1;
 }
@@ -32,7 +32,7 @@ void handler (int x)
 //
 // Change to given user
 //
-void chuser(const char *username )
+void chuser(const char *username)
 {
     struct passwd *pw;
     int rv;
@@ -40,7 +40,7 @@ void chuser(const char *username )
     pw = getpwnam(username);
     if (!pw)
     {
-        fprintf(stderr, "Failed to find user %s\n", username );
+        fprintf(stderr, "Failed to find user %s\n", username);
         exit(1);
     }
 
@@ -48,10 +48,7 @@ void chuser(const char *username )
         setgid(pw->pw_gid) != 0 || setuid(pw->pw_uid) != 0)
     {
         fprintf(stderr, "Couldn't change to '%.32s' uid=%lu gid=%lu\n",
-                username,
-                (unsigned long)pw->pw_uid,
-                (unsigned long)pw->pw_gid
-            );
+                username, (unsigned long) pw->pw_uid, (unsigned long) pw->pw_gid);
         exit(1);
     }
 }
@@ -68,22 +65,22 @@ char *get_hostname()
      * Get the short version.
      */
     char res[1024];
-    res[sizeof(res)-1] = '\0';
-    gethostname(res, sizeof(res)-1);
+    res[sizeof(res) - 1] = '\0';
+    gethostname(res, sizeof(res) - 1);
 
     /**
      * Attempt to get the full vrsion.
      */
     struct hostent *hstnm;
-    hstnm = gethostbyname (res);
+    hstnm = gethostbyname(res);
     if (hstnm)
     {
-        return(strdup(hstnm->h_name));
+        return (strdup(hstnm->h_name));
     }
 
-    if ( getenv( "HOSTNAME" ) != NULL )
+    if (getenv("HOSTNAME") != NULL)
     {
-        return(strdup(getenv("HOSTNAME" ) ));
+        return (strdup(getenv("HOSTNAME")));
     }
 
     printf("Failed to find hostname\n");
@@ -95,7 +92,7 @@ char *get_hostname()
 //
 //  Entry point to our code
 //
-int main (int argc, char *argv[])
+int main(int argc, char *argv[])
 {
     //
     //  Options parsing
@@ -105,20 +102,19 @@ int main (int argc, char *argv[])
     //
     //  Options
     //
-    char *user     = NULL;
+    char *user = NULL;
     char *hostname = NULL;
     int verbose = 0;
 
 
     while (1)
     {
-        static struct option long_options[] =
-            {
-                {"user", required_argument, 0, 'u'},
-                {"hostname", required_argument, 0, 'h'},
-                {"verbose", no_argument, 0, 'v'},
-                {0, 0, 0, 0}
-            };
+        static struct option long_options[] = {
+            {"user", required_argument, 0, 'u'},
+            {"hostname", required_argument, 0, 'h'},
+            {"verbose", no_argument, 0, 'v'},
+            {0, 0, 0, 0}
+        };
 
         /* getopt_long stores the option index here. */
         int option_index = 0;
@@ -135,13 +131,13 @@ int main (int argc, char *argv[])
             user = strdup(optarg);
             break;
         case 'h':
-            hostname = strdup( optarg );
+            hostname = strdup(optarg);
             break;
         case 'v':
             verbose += 1;
             break;
         default:
-            exit (1);
+            exit(1);
         }
     }
 
@@ -150,35 +146,33 @@ int main (int argc, char *argv[])
     //  Ensure we have the name of the queue on the command-line,
     // after any (optional) arguments.
     //
-    if ( optind >= argc )
+    if (optind >= argc)
     {
-        printf( "Usage: %s [options] queue-specification\n", argv[0] );
-        printf("   e.g. %s --user nobody tcp://master.example.com:444\n", argv[0] );
+        printf("Usage: %s [options] queue-specification\n", argv[0]);
+        printf("   e.g. %s --user nobody tcp://master.example.com:444\n", argv[0]);
         exit(1);
     }
-
     //
     //  Get the hostname if not set
     //
-    if ( hostname == NULL )
+    if (hostname == NULL)
         hostname = get_hostname();
 
     //
     //  Now we can drop privileges if we must.
     //
-    if ( user )
+    if (user)
     {
-        if ( verbose )
-            printf("chuser(%s)\n", user );
+        if (verbose)
+            printf("chuser(%s)\n", user);
 
         chuser(user);
     }
-
     //
     //  Create the socket.
     //
-    int sock = nn_socket (AF_SP, NN_SUB);
-    assert (sock >= 0);
+    int sock = nn_socket(AF_SP, NN_SUB);
+    assert(sock >= 0);
 
 
     //
@@ -189,16 +183,16 @@ int main (int argc, char *argv[])
     //
     //
     printf("Filtering on hostname: %s\n", hostname);
-    assert (nn_setsockopt (sock, NN_SUB, NN_SUB_SUBSCRIBE, hostname,
-                           strlen(hostname) ) >= 0);
-    assert (nn_setsockopt (sock, NN_SUB, NN_SUB_SUBSCRIBE, "ALL", 3 ) >= 0);
-    assert( nn_connect(sock,argv[optind]));
+    assert(nn_setsockopt(sock, NN_SUB, NN_SUB_SUBSCRIBE, hostname,
+                         strlen(hostname)) >= 0);
+    assert(nn_setsockopt(sock, NN_SUB, NN_SUB_SUBSCRIBE, "ALL", 3) >= 0);
+    assert(nn_connect(sock, argv[optind]));
 
 
     //
     //  Install a signal handler
     //
-    signal (SIGINT, handler);
+    signal(SIGINT, handler);
 
     //
     //  Wait for messages, forever.
@@ -215,7 +209,7 @@ int main (int argc, char *argv[])
         //  Receive a single message.
         //
         char *buf = NULL;
-        int bytes = nn_recv (sock, &buf, NN_MSG, 0);
+        int bytes = nn_recv(sock, &buf, NN_MSG, 0);
 
         //
         //  If we were interrupted, due to the signal-handler
@@ -231,8 +225,8 @@ int main (int argc, char *argv[])
         //
         //  Log the network-message.
         //
-        if ( verbose )
-            printf ("Received string: %s\n", buf);
+        if (verbose)
+            printf("Received string: %s\n", buf);
 
 
         //
@@ -240,31 +234,30 @@ int main (int argc, char *argv[])
         //
         //  Find the string after the ":" and execute it.
         //
-        char *cmd = strchr(buf, ':' );
-        if ( cmd != NULL )
+        char *cmd = strchr(buf, ':');
+        if (cmd != NULL)
         {
-            if ( verbose )
-                printf("Running command '%s'\n", cmd+1 );
+            if (verbose)
+                printf("Running command '%s'\n", cmd + 1);
 
-            system( cmd+1 );
+            system(cmd + 1);
         }
-
         //
         //  Free the received string
         //
-        nn_freemsg (buf);
+        nn_freemsg(buf);
     }
 
     //
     //  Avoid leaking memory
     //
-    if ( user )
-        free( user );
-    if ( hostname )
-        free( hostname );
+    if (user)
+        free(user);
+    if (hostname)
+        free(hostname);
 
     //
     //  Not reached.
     //
-    return nn_shutdown (sock, 0);
+    return nn_shutdown(sock, 0);
 }
