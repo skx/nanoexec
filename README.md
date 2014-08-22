@@ -38,11 +38,11 @@ For example:
 On the master host itself you can now inject commands to _any_ of the listening
 hosts:
 
-    # ./trigger host1.example.com:uptime
+    # ./trigger --host=host1.example.com --command=uptime
 
 If you want to mass-broadcast you could also use the magic string "`ALL:`":
 
-    # ./trigger ALL:uptime
+    # ./trigger --host=ALL --command=uptime
 
 
 
