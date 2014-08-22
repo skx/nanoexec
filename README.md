@@ -2,20 +2,20 @@ nanoexec - nanomsg based command execution
 ------------------------------------------
 
 This repository contains a simple client/server "thing" which allows
-for the execution of remote commands via a shared nanonmsg queue.
+for the execution of remote commands via a shared [nanonmsg](http://nanomsg.org/) queue.
 
 In brief:
 
-* There is a central host which issues commands.
-* There are an arbitrary number of listeners, which subscribe to messages from that master host.
+* There is a central host creates a queue through which commands can be broadcast.
+* There are an arbitrary number of listeners, which subscribe to the master-queue.
    * When a message is seen for the current host it will be executed.
 
 How is this useful?  Well it could allow client-side operations to be remotely
 initiated by a central host.
 
-For example I have a sysadmin tool called Slaughter, which is something like cfengine, but without the client-server part.  Each host must have a crontab entry installed to run the tool once an hour or so.
+For example I have a sysadmin tool called [Slaughter](http://www.steve.org.uk/Software/slaughter/), which is something like cfengine, but without the client-server part.  Each host must have a crontab entry installed to run the tool once an hour or so.
 
-If _this_ system were installed on all managed nodes the central hub could instruct them to trigger immediately
+If _this_ system were installed on all managed nodes then the central hub could instruct them to trigger execution immediately.
 
 
 
@@ -27,17 +27,26 @@ One host will be called "master.example.com", that is the central host.
 All other hosts will connect to this host, and await the arrival of messages.
 When a message is received it will be executed via `system()`.
 
-On each host compile and execute `nanoexec`, specifying the details of
-the master.  For example:
+On each host you wish to be able to receive/execute commands you should
+compile and execute `nanoexec`, specifying the details of the master.
+
+For example:
 
     # ./nanoexec tcp://master.example.com:4444
     Filtering on hostname: host1.example.com
 
-On the master host you can now inject commands to _any_ of the listening
+On the master host itself you can now inject commands to _any_ of the listening
 hosts:
 
     # ./trigger host1.example.com:uptime
 
+You'll note that commands have to be specified for the full hostname of the
+master.  It would be trivial to add a second filter to the managed hosts to
+allow:
+
+   # ./trigger ALL:id
+
+But that has not yet been done.
 
 
 Security
@@ -49,6 +58,8 @@ example(s) above.
 You'll want to open that port only to managed nodes, since there is an
 obvious security risk.
 
+If you choose a high-port it is not necessary for either the listener
+or the injector to run as root.
 
 
 Building
