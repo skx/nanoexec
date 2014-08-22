@@ -6,12 +6,26 @@
 #include <getopt.h>
 #include <netdb.h>
 #include <unistd.h>
+#include <signal.h>
 #include <sys/types.h>
 #include <pwd.h>
 
 #include <nanomsg/nn.h>
 #include <nanomsg/pubsub.h>
 
+
+
+volatile int stop = 0;
+
+
+
+//
+//  SIGINT handler - allow ourselves to be terminated cleanly.
+//
+void handler (int x)
+{
+    stop = 1;
+}
 
 
 
@@ -182,31 +196,55 @@ int main (int argc, char *argv[])
 
 
     //
+    //  Install a signal handler
+    //
+    signal (SIGINT, handler);
+
+    //
     //  Wait for messages, forever.
     //
     while (1)
     {
         //
+        //  Did we get interrupted?
+        //
+        if (stop)
+            break;
+
+        //
         //  Receive a single message.
         //
         char *buf = NULL;
         int bytes = nn_recv (sock, &buf, NN_MSG, 0);
-        assert (bytes >= 0);
 
+        //
+        //  If we were interrupted, due to the signal-handler
+        // then loop around again.
+        //
+        //  We could just break here, but it seems neater to avoid
+        // that.  The `stop` test above will handle the termination.
+        //
+        if (bytes <= 0 && errno == EINTR)
+            continue;
+
+
+        //
+        //  Log the network-message.
+        //
         if ( verbose )
             printf ("Received string: %s\n", buf);
+
 
         //
         //  The message will be ":"-deliminated.
         //
-        //
-        //  Find the first part after that ":" and execute it.
+        //  Find the string after the ":" and execute it.
         //
         char *cmd = strchr(buf, ':' );
         if ( cmd != NULL )
         {
             if ( verbose )
-                printf("Running command: '%s'\n", cmd+1 );
+                printf("Running command '%s'\n", cmd+1 );
 
             system( cmd+1 );
         }
@@ -216,6 +254,14 @@ int main (int argc, char *argv[])
         //
         nn_freemsg (buf);
     }
+
+    //
+    //  Avoid leaking memory
+    //
+    if ( user )
+        free( user );
+    if ( hostname )
+        free( hostname );
 
     //
     //  Not reached.
